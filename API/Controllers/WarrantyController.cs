@@ -17,7 +17,7 @@ namespace API.Controllers
         [HttpGet]
         public string Info()
         {
-            return "It's in warranty, trust me!";
+            return "I'm a warranty bot, beep beep. It's in warranty, trust me!";
         }
     }
 }
