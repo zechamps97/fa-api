@@ -110,12 +110,6 @@ namespace Warranty.Test
 
             Assert.IsNotNull(result);
         }
-
-        [TestMethod]
-        public void ReturnsWarrantyInfo_AlwaysFail()
-        {
-            Assert.Fail("STOP THE DEPLOYMENT!");
-        }
     }
 
     public class WarrantyInfoRowStub : IWarrantyInfoRow
