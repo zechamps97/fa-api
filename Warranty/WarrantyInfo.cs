@@ -1,5 +1,5 @@
 ﻿using FleetAssist.Common.Date.MonthOfLife;
-using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Warranty
@@ -15,51 +15,46 @@ namespace Warranty
             _warrantyDb = warrantyDb;
         }
 
-        public IWarrantyInfoRow? Query(string regNumber, int mileage)
+        public IEnumerable<IWarrantyInfoRow> Query(string regNumber, int mileage)
         {
             var vehicle = _vehicleLookup.Vehicle(regNumber);
 
             var monthOfLife = new MonthOfLifeConverter().ToMonthOfLife(vehicle.DateOfFirstReg);
 
-            var franchiseWarranty = _warrantyDb.WarrantyInfo.Where(db => db.Franchise == vehicle.Franchise);
+            var filteredWarranty = _warrantyDb.WarrantyInfo.Where(db => db.Franchise == vehicle.Franchise);
 
-            return franchiseWarranty.FirstOrDefault(w => 
-                AgeIsWithinWarranty(w, monthOfLife) &&
-                MileageIsWithinWarranty(w, mileage)
-            );
+            filteredWarranty = FilterOutMileageTooHigh(filteredWarranty, mileage);
+            filteredWarranty = FilterOutNotWithinMonthOfLife(filteredWarranty, monthOfLife);
 
+            return filteredWarranty;
         }
 
         /// <summary>
-        /// Checks if a vehicle's mileage is within a warranty limit.
+        /// Removes warranties from the selection pool if a vehicle's mileage is outside the warranty limit.
         /// </summary>
-        /// <param name="row">A warranty.</param>
+        /// <param name="warranties">Warranties to check.</param>
         /// <param name="mileage">The vehicle's mileage.</param>
-        /// <returns>True if within warranty limit, false if not.</returns>
-        private bool MileageIsWithinWarranty(IWarrantyInfoRow row, int mileage)
+        /// <returns>Warranties where there is no mileage limit or the mileage is below the limit.</returns>
+        private IEnumerable<IWarrantyInfoRow> FilterOutMileageTooHigh(IEnumerable<IWarrantyInfoRow> warranties, int mileage)
         {
-            if (row.MileageLessThan.HasValue)
-            {
-                return mileage <= row.MileageLessThan;
-            }
-            else
-            {
-                return true; //Unlimited mileage?
-            }
+            return warranties.Where(w => w.MileageLessThan == null || mileage <= w.MileageLessThan);
         }
 
         /// <summary>
-        /// Checks if the vehicle's month of life is within a warranty period.
+        /// Removes warranties from the selection pool if the vehicle's month of life is outside a warranty period.
         /// </summary>
-        /// <param name="row">A warranty.</param>
+        /// <param name="warranties">Warranties to check.</param>
         /// <param name="monthOfLife">The vehicle's month of life.</param>
-        /// <returns>True if within warranty period, false if not.</returns>
-        private bool AgeIsWithinWarranty(IWarrantyInfoRow row, int monthOfLife)
+        /// <returns>Warranties where there is no month of life limit or the month of life is within the limit.</returns>
+        private IEnumerable<IWarrantyInfoRow> FilterOutNotWithinMonthOfLife(IEnumerable<IWarrantyInfoRow> warranties, int monthOfLife)
         {
-            return
-                monthOfLife >= row.MonthOfLifeGreaterThan &&
-                monthOfLife <= row.MonthOfLifeLessThan
-            ;
+            var validWarranties = warranties;
+
+            validWarranties = validWarranties.Where(w => w.MonthOfLifeLessThan == null || monthOfLife <= w.MonthOfLifeLessThan);
+
+            validWarranties = validWarranties.Where(w => w.MonthOfLifeGreaterThan == null || monthOfLife >= w.MonthOfLifeGreaterThan);
+
+            return validWarranties;
         }
     }
 }

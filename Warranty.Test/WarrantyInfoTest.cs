@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Warranty.Test
 {
@@ -49,19 +50,19 @@ namespace Warranty.Test
             var fordResult = warrantyInfo.Query("FO20RD1", default);
             var toyotaResult = warrantyInfo.Query("TO20YOT", default);
 
-            Assert.AreEqual("Ford", fordResult.Franchise);
-            Assert.AreEqual("Toyota", toyotaResult.Franchise);
+            Assert.AreEqual("Ford", fordResult.First().Franchise);
+            Assert.AreEqual("Toyota", toyotaResult.First().Franchise);
         }
 
         [TestMethod]
         public void ReturnsWarrantyInfo_WhenWithinMonthOfLifeLimit()
         {
             var vehicleLookup = new Mock<IVehicleLookup>(MockBehavior.Strict);
-            var older = new Vehicle(regNumber: "FO20RD1", "Ford", dateOfFirstReg: new DateTime(2006, 03, 1));
-            var newer = new Vehicle(regNumber: "TO20YOT", "Toyota", dateOfFirstReg: new DateTime(2020, 03, 1));
+            var older = new Vehicle(regNumber: "FO10RD1", "Ford", dateOfFirstReg: new DateTime(2010, 03, 01));
+            var newer = new Vehicle(regNumber: "FO20RD1", "Ford", dateOfFirstReg: new DateTime(2020, 03, 01));
 
-            vehicleLookup.Setup(s => s.Vehicle("FO20RD1")).Returns(older);
-            vehicleLookup.Setup(s => s.Vehicle("TO20YOT")).Returns(newer);
+            vehicleLookup.Setup(s => s.Vehicle("FO10RD1")).Returns(older);
+            vehicleLookup.Setup(s => s.Vehicle("FO20RD1")).Returns(newer);
 
             _warrantyInfoRows.Add(new WarrantyInfoRowStub()
             {
@@ -70,25 +71,21 @@ namespace Warranty.Test
                 MonthOfLifeGreaterThan = 0,
                 MonthOfLifeLessThan = 24
             });
-            _warrantyInfoRows.Add(new WarrantyInfoRowStub()
-            {
-                Franchise = "Toyota",
-                AppliesTo = "All Models",
-                MonthOfLifeGreaterThan = 0,
-                MonthOfLifeLessThan = 36
-            });
 
             var warrantyInfo = new WarrantyInfo(vehicleLookup.Object, _db.Object);
 
-            var olderResult = warrantyInfo.Query("FO20RD1", default);
-            var newerResult = warrantyInfo.Query("TO20YOT", default);
+            var olderResult = warrantyInfo.Query("FO10RD1", default);
+            var newerResult = warrantyInfo.Query("FO20RD1", default);
 
-            Assert.IsNull(olderResult);
-            Assert.IsNotNull(newerResult);
+            Assert.IsFalse(olderResult.Any());
+            Assert.IsTrue(newerResult.Any());
         }
 
-        [TestMethod]
-        public void ReturnsWarrantyInfo_WhenWithinMonthOfLife_AndMileageLimit()
+        [DataTestMethod]
+        [DataRow(0, 24, 100000)]
+        [DataRow(null, 24, 100000)]
+        [DataRow(null, null, 100000)]
+        public void ReturnsWarrantyInfo_WhenWithinMonthOfLife_AndMileageLimit(int? monthOfLifeGreaterThan, int? monthOfLifeLessThan, int? mileageLessThan)
         {
             var vehicle = new Vehicle(regNumber: "FO20RD1", "Ford", dateOfFirstReg: new DateTime(2020, 03, 1));
 
@@ -99,16 +96,16 @@ namespace Warranty.Test
             {
                 Franchise = "Ford",
                 AppliesTo = "All Models",
-                MonthOfLifeGreaterThan = 0,
-                MonthOfLifeLessThan = 24,
-                MileageLessThan = 100000
+                MonthOfLifeGreaterThan = (short?)monthOfLifeGreaterThan,
+                MonthOfLifeLessThan = (short?)monthOfLifeLessThan,
+                MileageLessThan = mileageLessThan
             });
 
             var warrantyInfo = new WarrantyInfo(vehicleLookupService.Object, _db.Object);
 
             var result = warrantyInfo.Query("FO20RD1", 50000);
 
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.First());
         }
     }
 
