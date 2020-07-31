@@ -21,7 +21,7 @@ namespace Warranty.Test
         }
 
         [TestMethod]
-        public void ReturnsWarrantyInfo_BasedOnFranchise()
+        public void ReturnsWarrantyInfo_WhenFranchiseMatches()
         {
             var vehicleLookup = new Mock<IVehicleLookup>(MockBehavior.Strict);
             var ford = new Vehicle(regNumber: "FO20RD1", "Ford", dateOfFirstReg: new DateTime(2020, 03, 1));
