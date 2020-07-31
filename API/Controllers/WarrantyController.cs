@@ -19,5 +19,11 @@ namespace API.Controllers
         {
             return "I'm a warranty bot, beep beep. It's in warranty, trust me!";
         }
+
+        [HttpGet]
+        public bool HasWarranty()
+        {
+            return false;
+        }
     }
 }
