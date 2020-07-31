@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - fa-api20200723
+name: Build and deploy ASP.Net Core app to Azure Web App - fa-api-app
 
 on:
   push:
@@ -22,9 +22,6 @@ jobs:
 
     - name: Build with dotnet
       run: dotnet build --configuration Release
-      
-    - name: Test with dotnet
-      run: dotnet test --no-restore --verbosity normal
 
     - name: dotnet publish
       run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -32,7 +29,7 @@ jobs:
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v1
       with:
-        app-name: 'fa-api20200723'
+        app-name: 'fa-api-app'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_3c2c6018413f40fcbd7721f1532c3bcf }}
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_df3f7c982fe040509fff626d711f1915 }}
         package: ${{env.DOTNET_ROOT}}/myapp 
