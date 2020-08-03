@@ -22,8 +22,7 @@ namespace API.Controllers
             var info = new
             {
                 AppliesTo = "All models",
-                MonthOfLifeGreaterThan = new DateTime(2020, 01, 01),
-                MonthOfLifeLessThan = new DateTime(2022, 12, 31),
+                MonthOfLifeLessThan = 24,
                 MileageLessThan = 100000
             };
 
