@@ -96,9 +96,33 @@ namespace Warranty.Test
             {
                 Franchise = "Ford",
                 AppliesTo = "All Models",
-                MonthOfLifeGreaterThan = (short?)monthOfLifeGreaterThan,
-                MonthOfLifeLessThan = (short?)monthOfLifeLessThan,
+                MonthOfLifeGreaterThan = (byte?)monthOfLifeGreaterThan,
+                MonthOfLifeLessThan = (byte?)monthOfLifeLessThan,
                 MileageLessThan = mileageLessThan
+            });
+
+            var warrantyInfo = new WarrantyInfo(vehicleLookupService.Object, _db.Object);
+
+            var result = warrantyInfo.Query("FO20RD1", 50000);
+
+            Assert.IsNotNull(result.First());
+        }
+
+        [TestMethod]
+        public void ReturnsWarrantyInfo_WhenWithinRegistrationPeriod()
+        {
+            var vehicle = new Vehicle(regNumber: "FO20RD1", "Ford", dateOfFirstReg: new DateTime(2020, 03, 1));
+
+            var vehicleLookupService = new Mock<IVehicleLookup>(MockBehavior.Strict);
+            vehicleLookupService.Setup(s => s.Vehicle("FO20RD1")).Returns(vehicle);
+
+            _warrantyInfoRows.Add(new WarrantyInfoRowStub()
+            {
+                Franchise = "Ford",
+                AppliesTo = "All Models",
+                RegisteredAfter = new DateTime(2020, 01, 01),
+                RegisteredBefore = new DateTime(2022, 12, 31),
+                MileageLessThan = default
             });
 
             var warrantyInfo = new WarrantyInfo(vehicleLookupService.Object, _db.Object);
@@ -113,8 +137,8 @@ namespace Warranty.Test
     {
         public string Franchise { get; set; }
         public string AppliesTo { get; set; }
-        public short? MonthOfLifeGreaterThan { get; set; }
-        public short? MonthOfLifeLessThan { get; set; }
+        public byte? MonthOfLifeGreaterThan { get; set; }
+        public byte? MonthOfLifeLessThan { get; set; }
         public DateTime? RegisteredAfter { get; set; }
         public DateTime? RegisteredBefore { get; set; }
         public int? MileageLessThan { get; set; }

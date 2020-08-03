@@ -13,8 +13,8 @@ namespace Warranty
         public string Franchise { get; }
         public string AppliesTo { get; set; }
 
-        public short? MonthOfLifeGreaterThan { get; }
-        public short? MonthOfLifeLessThan { get; }
+        public byte? MonthOfLifeGreaterThan { get; }
+        public byte? MonthOfLifeLessThan { get; }
 
         public DateTime? RegisteredAfter { get; }
         public DateTime? RegisteredBefore { get; }
