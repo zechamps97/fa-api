@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Text.Json;
 
 namespace API.Controllers
 {
@@ -21,9 +22,9 @@ namespace API.Controllers
             var info = new
             {
                 AppliesTo = "All models",
-                MonthOfLifeFrom = new DateTime(2020, 01, 01),
-                MonthOfLifeTo = new DateTime(2022, 12, 31),
-                MileageUpTo = 100000
+                MonthOfLifeGreaterThan = new DateTime(2020, 01, 01),
+                MonthOfLifeLessThan = new DateTime(2022, 12, 31),
+                MileageLessThan = 100000
             };
 
             return new JsonResult(info);
